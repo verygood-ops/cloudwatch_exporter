@@ -27,7 +27,7 @@ func getLatestDatapoint(datapoints []*cloudwatch.Datapoint) *cloudwatch.Datapoin
 // scrape makes the required calls to AWS CloudWatch by using the parameters in the cwCollector
 // Once converted into Prometheus format, the metrics are pushed on the ch channel.
 func scrape(collector *cwCollector, ch chan<- prometheus.Metric) {
-
+	fmt.Println("Scraping")
 	awsSession := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(collector.Region),
 	}))
