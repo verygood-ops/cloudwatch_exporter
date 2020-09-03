@@ -33,6 +33,7 @@ type Task struct {
 type Settings struct {
 	AutoReload  bool   `yaml:"auto_reload,omitempty"`
 	ReloadDelay int    `yaml:"auto_reload_delay,omitempty"`
+	AssumeRole	string `yaml:"role_arn"`
 	Tasks       []Task `yaml:"tasks"`
 }
 
