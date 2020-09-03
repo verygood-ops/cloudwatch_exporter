@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials/stscreds"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
 	"github.com/prometheus/client_golang/prometheus"
@@ -26,11 +27,18 @@ func getLatestDatapoint(datapoints []*cloudwatch.Datapoint) *cloudwatch.Datapoin
 // scrape makes the required calls to AWS CloudWatch by using the parameters in the cwCollector
 // Once converted into Prometheus format, the metrics are pushed on the ch channel.
 func scrape(collector *cwCollector, ch chan<- prometheus.Metric) {
-	session := session.Must(session.NewSession(&aws.Config{
+
+	awsSession := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(collector.Region),
 	}))
 
-	svc := cloudwatch.New(session)
+	// Support for assuming role for CW metrics collection
+	if collector.AssumeRole != "" {
+		creds := stscreds.NewCredentials(awsSession, collector.AssumeRole)
+		awsSession = session.Must(session.NewSession(&aws.Config{Credentials: creds}))
+	}
+
+	svc := cloudwatch.New(awsSession)
 	for m := range collector.Template.Metrics {
 		metric := &collector.Template.Metrics[m]
 
