@@ -27,16 +27,22 @@ func getLatestDatapoint(datapoints []*cloudwatch.Datapoint) *cloudwatch.Datapoin
 // scrape makes the required calls to AWS CloudWatch by using the parameters in the cwCollector
 // Once converted into Prometheus format, the metrics are pushed on the ch channel.
 func scrape(collector *cwCollector, ch chan<- prometheus.Metric) {
-	fmt.Println("Scraping")
-	awsSession := session.Must(session.NewSession(&aws.Config{
-		Region: aws.String(collector.Region),
-	}))
+
+	if collector.DebugLog { fmt.Println("Scraping") }
+	cfg := aws.NewConfig().WithRegion(collector.Region)
+	if collector.DebugLog { cfg = cfg.WithLogLevel(aws.LogDebugWithHTTPBody) }
+
+	awsSession := session.Must(session.NewSession(cfg))
 
 	// Support for assuming role for CW metrics collection
 	if collector.AssumeRole != "" {
-		fmt.Println("Assuming role" + collector.AssumeRole)
-		creds := stscreds.NewCredentials(awsSession, collector.AssumeRole)
-		awsSession = session.Must(session.NewSession(&aws.Config{Credentials: creds}))
+
+		if collector.DebugLog { fmt.Println("Assuming role" + collector.AssumeRole) }
+		awsCredentials := stscreds.NewCredentials(awsSession, collector.AssumeRole)
+		cfg := aws.NewConfig().WithRegion(collector.Region).WithCredentials(awsCredentials)
+
+		if collector.DebugLog { cfg = cfg.WithLogLevel(aws.LogDebugWithHTTPBody) }
+		awsSession = session.Must(session.NewSession(cfg))
 	}
 
 	svc := cloudwatch.New(awsSession)

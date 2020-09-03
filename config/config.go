@@ -34,6 +34,7 @@ type Settings struct {
 	AutoReload  bool   `yaml:"auto_reload,omitempty"`
 	ReloadDelay int    `yaml:"auto_reload_delay,omitempty"`
 	AssumeRole	string `yaml:"role_arn"`
+	DebugLog    bool   `yaml:"log_debug",omitempty`
 	Tasks       []Task `yaml:"tasks"`
 }
 

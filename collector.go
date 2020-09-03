@@ -29,6 +29,7 @@ type cwCollector struct {
 	Region            string
 	AssumeRole		  string
 	Target            string
+	DebugLog		  bool
 	ScrapeTime        prometheus.Gauge
 	ErroneousRequests prometheus.Counter
 	Template          *cwCollectorTemplate
